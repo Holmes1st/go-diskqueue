@@ -15,6 +15,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 func Equal(t *testing.T, expected, actual interface{}) {
@@ -71,14 +73,8 @@ type tbLog interface {
 	Log(...interface{})
 }
 
-func NewTestLogger(tbl tbLog) AppLogFunc {
-	return func(lvl LogLevel, f string, args ...interface{}) {
-		tbl.Log(fmt.Sprintf(lvl.String()+": "+f, args...))
-	}
-}
-
 func TestDiskQueue(t *testing.T) {
-	l := NewTestLogger(t)
+	l := logrus.StandardLogger()
 
 	dqName := "test_disk_queue" + strconv.Itoa(int(time.Now().Unix()))
 	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("nsq-test-%d", time.Now().UnixNano()))
@@ -101,7 +97,7 @@ func TestDiskQueue(t *testing.T) {
 }
 
 func TestDiskQueueRoll(t *testing.T) {
-	l := NewTestLogger(t)
+	l := logrus.StandardLogger()
 	dqName := "test_disk_queue_roll" + strconv.Itoa(int(time.Now().Unix()))
 	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("nsq-test-%d", time.Now().UnixNano()))
 	if err != nil {
@@ -132,7 +128,7 @@ func assertFileNotExist(t *testing.T, fn string) {
 }
 
 func TestDiskQueueEmpty(t *testing.T) {
-	l := NewTestLogger(t)
+	l := logrus.StandardLogger()
 	dqName := "test_disk_queue_empty" + strconv.Itoa(int(time.Now().Unix()))
 	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("nsq-test-%d", time.Now().UnixNano()))
 	if err != nil {
@@ -200,7 +196,7 @@ func TestDiskQueueEmpty(t *testing.T) {
 }
 
 func TestDiskQueueCorruption(t *testing.T) {
-	l := NewTestLogger(t)
+	l := logrus.StandardLogger()
 	dqName := "test_disk_queue_corruption" + strconv.Itoa(int(time.Now().Unix()))
 	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("nsq-test-%d", time.Now().UnixNano()))
 	if err != nil {
@@ -278,7 +274,7 @@ func readMetaDataFile(fileName string, retried int) md {
 }
 
 func TestDiskQueueSyncAfterRead(t *testing.T) {
-	l := NewTestLogger(t)
+	l := logrus.StandardLogger()
 	dqName := "test_disk_queue_read_after_sync" + strconv.Itoa(int(time.Now().Unix()))
 	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("nsq-test-%d", time.Now().UnixNano()))
 	if err != nil {
@@ -329,7 +325,7 @@ done:
 func TestDiskQueueTorture(t *testing.T) {
 	var wg sync.WaitGroup
 
-	l := NewTestLogger(t)
+	l := logrus.StandardLogger()
 	dqName := "test_disk_queue_torture" + strconv.Itoa(int(time.Now().Unix()))
 	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("nsq-test-%d", time.Now().UnixNano()))
 	if err != nil {
@@ -444,7 +440,7 @@ func BenchmarkDiskQueuePut1048576(b *testing.B) {
 }
 func benchmarkDiskQueuePut(size int64, b *testing.B) {
 	b.StopTimer()
-	l := NewTestLogger(b)
+	l := logrus.StandardLogger()
 	dqName := "bench_disk_queue_put" + strconv.Itoa(b.N) + strconv.Itoa(int(time.Now().Unix()))
 	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("nsq-test-%d", time.Now().UnixNano()))
 	if err != nil {
@@ -595,7 +591,7 @@ func BenchmarkDiskQueueGet1048576(b *testing.B) {
 
 func benchmarkDiskQueueGet(size int64, b *testing.B) {
 	b.StopTimer()
-	l := NewTestLogger(b)
+	l := logrus.StandardLogger()
 	dqName := "bench_disk_queue_get" + strconv.Itoa(b.N) + strconv.Itoa(int(time.Now().Unix()))
 	tmpDir, err := ioutil.TempDir("", fmt.Sprintf("nsq-test-%d", time.Now().UnixNano()))
 	if err != nil {
